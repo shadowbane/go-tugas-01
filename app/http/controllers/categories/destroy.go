@@ -1,9 +1,9 @@
 package categories
 
 import (
+	"github.com/shadowbane/go-tugas-01/app/helpers"
 	"io"
 	"net/http"
-	"shadowbane/go-tugas-01/app/helpers"
 
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"

@@ -1,7 +1,7 @@
 package categories
 
 import (
-	"shadowbane/go-tugas-01/app/models"
+	"github.com/shadowbane/go-tugas-01/app/models"
 	"sync"
 )
 

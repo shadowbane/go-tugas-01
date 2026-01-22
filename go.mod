@@ -1,4 +1,4 @@
-module shadowbane/go-tugas-01
+module github.com/shadowbane/go-tugas-01
 
 go 1.23.4
 

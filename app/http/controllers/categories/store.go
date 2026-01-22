@@ -2,10 +2,10 @@ package categories
 
 import (
 	"encoding/json"
+	"github.com/shadowbane/go-tugas-01/app/helpers"
+	"github.com/shadowbane/go-tugas-01/app/models"
 	"io"
 	"net/http"
-	"shadowbane/go-tugas-01/app/helpers"
-	"shadowbane/go-tugas-01/app/models"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"

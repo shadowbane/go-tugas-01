@@ -3,7 +3,7 @@ package router
 import (
 	"github.com/julienschmidt/httprouter"
 
-	categoryController "shadowbane/go-tugas-01/app/http/controllers/categories"
+	categoryController "github.com/shadowbane/go-tugas-01/app/http/controllers/categories"
 )
 
 func Api() *httprouter.Router {

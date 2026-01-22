@@ -4,13 +4,12 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"shadowbane/go-tugas-01/app/exithandler"
 
 	"github.com/shadowbane/go-logger"
+	"github.com/shadowbane/go-tugas-01/app/exithandler"
+	"github.com/shadowbane/go-tugas-01/app/server"
+	"github.com/shadowbane/go-tugas-01/router"
 	"go.uber.org/zap"
-
-	"shadowbane/go-tugas-01/app/server"
-	"shadowbane/go-tugas-01/router"
 )
 
 var ApiPort = "0.0.0.0:8080"
