@@ -29,7 +29,12 @@ func Store() httprouter.Handle {
 		}
 		newCategory.ID = strings.ToUpper(helpers.NewULID())
 
-		categoryData = append(categoryData, newCategory)
+		func() {
+			mutex.Lock()
+			defer mutex.Unlock()
+
+			categoryData = append(categoryData, newCategory)
+		}()
 
 		helpers.WriteResponse(w, newCategory)
 	}

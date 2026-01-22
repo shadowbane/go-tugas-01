@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"shadowbane/go-tugas-01/app/helpers"
+	"shadowbane/go-tugas-01/app/models"
 
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -18,6 +19,11 @@ func Index() httprouter.Handle {
 			}
 		}(r.Body)
 
-		helpers.WriteResponse(w, categoryData)
+		mutex.RLock()
+		data := make([]models.Category, len(categoryData))
+		copy(data, categoryData)
+		mutex.RUnlock()
+
+		helpers.WriteResponse(w, data)
 	}
 }

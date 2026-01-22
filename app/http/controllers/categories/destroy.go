@@ -18,16 +18,26 @@ func Destroy() httprouter.Handle {
 			}
 		}(r.Body)
 
+		var deleted bool
 		categoryID := p.ByName("category")
 
-		for i, category := range categoryData {
-			if category.ID == categoryID {
-				categoryData = append(categoryData[:i], categoryData[i+1:]...)
-				helpers.WriteResponse(w, map[string]string{"message": "Category deleted"})
-				return
-			}
-		}
+		func() {
+			mutex.Lock()
+			defer mutex.Unlock()
 
-		helpers.WriteErrorResponse(w, http.StatusNotFound, "Category not found")
+			for i, category := range categoryData {
+				if category.ID == categoryID {
+					categoryData = append(categoryData[:i], categoryData[i+1:]...)
+					deleted = true
+					return
+				}
+			}
+		}()
+
+		if deleted {
+			helpers.WriteResponse(w, map[string]string{"message": "Category deleted"})
+		} else {
+			helpers.WriteErrorResponse(w, http.StatusNotFound, "Category not found")
+		}
 	}
 }

@@ -1,5 +1,11 @@
 package categories
 
-import "shadowbane/go-tugas-01/app/models"
+import (
+	"shadowbane/go-tugas-01/app/models"
+	"sync"
+)
 
-var categoryData []models.Category
+var (
+	categoryData []models.Category
+	mutex        sync.RWMutex
+)

@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"shadowbane/go-tugas-01/app/helpers"
+	"shadowbane/go-tugas-01/app/models"
 
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -19,14 +20,26 @@ func Show() httprouter.Handle {
 		}(r.Body)
 
 		categoryID := p.ByName("category")
+		var foundCategory models.Category
+		var found bool
 
-		for _, category := range categoryData {
-			if category.ID == categoryID {
-				helpers.WriteResponse(w, category)
-				return
+		func() {
+			mutex.RLock()
+			defer mutex.RUnlock()
+
+			for _, category := range categoryData {
+				if category.ID == categoryID {
+					foundCategory = category
+					found = true
+					return
+				}
 			}
-		}
+		}()
 
-		helpers.WriteErrorResponse(w, http.StatusNotFound, "Category not found")
+		if found {
+			helpers.WriteResponse(w, foundCategory)
+		} else {
+			helpers.WriteErrorResponse(w, http.StatusNotFound, "Category not found")
+		}
 	}
 }

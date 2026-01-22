@@ -20,8 +20,6 @@ func Update() httprouter.Handle {
 			}
 		}(r.Body)
 
-		categoryID := p.ByName("category")
-
 		var updatedCategory models.Category
 		err := json.NewDecoder(r.Body).Decode(&updatedCategory)
 		if err != nil {
@@ -29,15 +27,27 @@ func Update() httprouter.Handle {
 			return
 		}
 
-		for i, category := range categoryData {
-			if category.ID == categoryID {
-				updatedCategory.ID = categoryID
-				categoryData[i] = updatedCategory
-				helpers.WriteResponse(w, updatedCategory)
-				return
-			}
-		}
+		var updated bool
+		categoryID := p.ByName("category")
 
-		helpers.WriteErrorResponse(w, http.StatusNotFound, "Category not found")
+		func() {
+			mutex.Lock()
+			defer mutex.Unlock()
+
+			for i, category := range categoryData {
+				if category.ID == categoryID {
+					updatedCategory.ID = categoryID
+					categoryData[i] = updatedCategory
+					updated = true
+					return
+				}
+			}
+		}()
+
+		if updated {
+			helpers.WriteResponse(w, updatedCategory)
+		} else {
+			helpers.WriteErrorResponse(w, http.StatusNotFound, "Category not found")
+		}
 	}
 }
