@@ -30,7 +30,7 @@ func main() {
 
 		// Note to self: this should fix the issue on dockerized app,
 		// where the server cannot start (when not using traefik)
-		// because of port conflict.
+		// because of port conflict. ToDo: update your other app on homeserver!
 		if err := srv.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			zap.S().Errorf("Server Error: %s", err.Error())
 
