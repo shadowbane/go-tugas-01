@@ -10,15 +10,15 @@ func Api() *httprouter.Router {
 	mux := httprouter.New()
 
 	// **GET** `/categories` → Get all category
-	mux.GET("/api/v1/categories", categoryController.Index())
+	mux.GET("/categories", categoryController.Index())
 	// **POST** `/categories` → Add new category
-	mux.POST("/api/v1/categories", categoryController.Store())
+	mux.POST("/categories", categoryController.Store())
 	// **PUT** `/categories/{id}` → Update category
-	mux.PUT("/api/v1/categories/:category", categoryController.Update())
+	mux.PUT("/categories/:category", categoryController.Update())
 	// **GET** `/categories/{id}` → Get one category
-	mux.GET("/api/v1/categories/:category", categoryController.Show())
+	mux.GET("/categories/:category", categoryController.Show())
 	// **DELETE** `/categories/{id}` → Delete category
-	mux.DELETE("/api/v1/categories/:category", categoryController.Destroy())
+	mux.DELETE("/categories/:category", categoryController.Destroy())
 
 	return mux
 }

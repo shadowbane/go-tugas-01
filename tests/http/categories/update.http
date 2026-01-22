@@ -1,5 +1,5 @@
 ### Show a category
-PUT http://localhost:8080/api/v1/categories/01KFJXCN3V6MQXBR87YPAHDCAG
+PUT http://localhost:8080/categories/01KFJXCN3V6MQXBR87YPAHDCAG
 Content-Type: application/json
 
 {
