@@ -1,6 +1,9 @@
 package main
 
 import (
+	"errors"
+	"net/http"
+	"os"
 	"shadowbane/go-tugas-01/app/exithandler"
 
 	"github.com/shadowbane/go-logger"
@@ -25,8 +28,16 @@ func main() {
 	go func() {
 		zap.S().Info("starting api server at ", ApiPort)
 
-		if err := srv.Start(); err != nil {
-			zap.S().Warn(err.Error())
+		// Note to self: this should fix the issue on dockerized app,
+		// where the server cannot start (when not using traefik)
+		// because of port conflict.
+		if err := srv.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			zap.S().Errorf("Server Error: %s", err.Error())
+
+			// Close after detecting server error
+			// this will trigger the container to be recreated.
+			// In case of using supervisor, this could trigger restart
+			os.Exit(1)
 		}
 	}()
 
