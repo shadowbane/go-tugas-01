@@ -1,0 +1,67 @@
+package server
+
+import (
+	"context"
+	"errors"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/julienschmidt/httprouter"
+	"go.uber.org/zap"
+)
+
+type Server struct {
+	srv *http.Server
+}
+
+type FwdToZapWriter struct {
+	Logger *zap.SugaredLogger
+}
+
+func (fw *FwdToZapWriter) Write(p []byte) (n int, err error) {
+	fw.Logger.Errorw(string(p))
+	return len(p), nil
+}
+
+func Get() *Server {
+	return &Server{
+		srv: &http.Server{},
+	}
+}
+
+func (s *Server) WithAddr(addr string) *Server {
+	s.srv.Addr = addr
+	return s
+}
+
+func (s *Server) WithErrLogger(l *zap.SugaredLogger) *Server {
+	s.srv.ErrorLog = log.New(&FwdToZapWriter{Logger: l}, "", 0)
+	return s
+}
+
+func (s *Server) WithRouter(router *httprouter.Router) *Server {
+	s.srv.Handler = router
+	return s
+}
+
+func (s *Server) Start() error {
+	if len(s.srv.Addr) == 0 {
+		return errors.New("server missing address")
+	}
+
+	if s.srv.Handler == nil {
+		return errors.New("server missing handler")
+	}
+
+	return s.srv.ListenAndServe()
+}
+
+func (s *Server) Close() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	return s.srv.Shutdown(ctx)
+}

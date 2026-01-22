@@ -1,0 +1,29 @@
+package exithandler
+
+import (
+	"os"
+	"os/signal"
+	"syscall"
+
+	"go.uber.org/zap"
+)
+
+var WaitGroup WaitGroupCount
+
+func Init(cb func()) {
+	sigs := make(chan os.Signal, 1)
+	terminate := make(chan bool, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-sigs
+		zap.S().Info("exit reason: ", sig)
+		terminate <- true
+	}()
+
+	<-terminate
+
+	cb()
+
+	WaitGroup.Wait()
+}
