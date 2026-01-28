@@ -22,7 +22,8 @@ func main() {
 	// Setup database
 	db, err := database.InitDB(cfg.GetPSQLConnectionString())
 	if err != nil {
-		zap.S().Fatal("Failed to initialize database: ", err)
+		zap.S().Errorf("Failed to initialize database: %s", err.Error())
+		os.Exit(1)
 	}
 
 	// Dependency Injection
