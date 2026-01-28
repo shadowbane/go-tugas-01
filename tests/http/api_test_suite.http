@@ -1,0 +1,647 @@
+### ============================================
+### API Test Suite - Categories & Products
+### Run this file once to execute all tests
+### ============================================
+
+### --------------------------------------------
+### CATEGORY TESTS
+### --------------------------------------------
+
+### 1. Create Category (Success)
+POST {{host}}/categories
+Content-Type: application/json
+
+{
+    "name": "Test Category",
+    "description": "Category for testing purposes"
+}
+
+> {%
+    client.test("POST /categories - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("POST /categories - Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("POST /categories - Category has ULID", function() {
+        client.assert(response.body.data.id !== undefined && response.body.data.id.length === 26, "Expected 26-char ULID");
+    });
+
+    client.test("POST /categories - Name matches", function() {
+        client.assert(response.body.data.name === "Test Category", "Expected name 'Test Category'");
+    });
+
+    client.global.set("testCategoryId", response.body.data.id);
+%}
+
+###
+
+### 2. Create Second Category (for additional tests)
+POST {{host}}/categories
+Content-Type: application/json
+
+{
+    "name": "Second Category",
+    "description": "Another category for testing"
+}
+
+> {%
+    client.test("POST /categories - Create second category", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.global.set("secondCategoryId", response.body.data.id);
+%}
+
+###
+
+### 3. Get All Categories
+GET {{host}}/categories
+Content-Type: application/json
+
+> {%
+    client.test("GET /categories - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("GET /categories - Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("GET /categories - Data is an array", function() {
+        client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+    });
+
+    client.test("GET /categories - Array has items", function() {
+        client.assert(response.body.data.length >= 2, "Expected at least 2 categories");
+    });
+%}
+
+###
+
+### 4. Get Single Category (Success)
+GET {{host}}/categories/{{testCategoryId}}
+Content-Type: application/json
+
+> {%
+    client.test("GET /categories/:id - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("GET /categories/:id - Correct category returned", function() {
+        client.assert(response.body.data.id === client.global.get("testCategoryId"), "Expected correct category ID");
+    });
+
+    client.test("GET /categories/:id - Name matches", function() {
+        client.assert(response.body.data.name === "Test Category", "Expected name 'Test Category'");
+    });
+%}
+
+###
+
+### 5. Get Non-Existent Category (404)
+GET {{host}}/categories/01NONEXISTENT00000000000
+Content-Type: application/json
+
+> {%
+    client.test("GET /categories/:id (non-existent) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for non-existent category");
+    });
+
+    client.test("GET /categories/:id (non-existent) - Success is false", function() {
+        client.assert(response.body.success === false, "Expected success to be false");
+    });
+%}
+
+###
+
+### 6. Get Category with Invalid ID "1"
+GET {{host}}/categories/1
+Content-Type: application/json
+
+> {%
+    client.test("GET /categories/1 (invalid ID) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for invalid category ID");
+    });
+%}
+
+###
+
+### 7. Update Category (Success)
+PUT {{host}}/categories/{{testCategoryId}}
+Content-Type: application/json
+
+{
+    "name": "Updated Test Category",
+    "description": "Updated description"
+}
+
+> {%
+    client.test("PUT /categories/:id - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("PUT /categories/:id - Name was updated", function() {
+        client.assert(response.body.data.name === "Updated Test Category", "Expected updated name");
+    });
+
+    client.test("PUT /categories/:id - Description was updated", function() {
+        client.assert(response.body.data.description === "Updated description", "Expected updated description");
+    });
+%}
+
+###
+
+### 8. Update Non-Existent Category (404)
+PUT {{host}}/categories/01NONEXISTENT00000000000
+Content-Type: application/json
+
+{
+    "name": "Should Fail",
+    "description": "This should not work"
+}
+
+> {%
+    client.test("PUT /categories/:id (non-existent) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for non-existent category");
+    });
+%}
+
+###
+
+### 9. Delete Non-Existent Category (404)
+DELETE {{host}}/categories/01NONEXISTENT00000000000
+Content-Type: application/json
+
+> {%
+    client.test("DELETE /categories/:id (non-existent) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for non-existent category");
+    });
+%}
+
+###
+
+### 10. Delete Category with Invalid ID "1"
+DELETE {{host}}/categories/1
+Content-Type: application/json
+
+> {%
+    client.test("DELETE /categories/1 (invalid ID) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for invalid category ID");
+    });
+%}
+
+###
+
+### --------------------------------------------
+### PRODUCT TESTS
+### --------------------------------------------
+
+### 11. Create Product (Success)
+POST {{host}}/products
+Content-Type: application/json
+
+{
+    "product_id": "{{testCategoryId}}",
+    "name": "Test Product",
+    "description": "Product for testing",
+    "price": 10000,
+    "stock": 50
+}
+
+> {%
+    client.test("POST /products - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("POST /products - Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("POST /products - Product has ULID", function() {
+        client.assert(response.body.data.id !== undefined && response.body.data.id.length === 26, "Expected 26-char ULID");
+    });
+
+    client.test("POST /products - Name matches", function() {
+        client.assert(response.body.data.name === "Test Product", "Expected name 'Test Product'");
+    });
+
+    client.test("POST /products - Price matches", function() {
+        client.assert(response.body.data.price === 10000, "Expected price 10000");
+    });
+
+    client.test("POST /products - Stock matches", function() {
+        client.assert(response.body.data.stock === 50, "Expected stock 50");
+    });
+
+    client.test("POST /products - product_id (FK) matches", function() {
+        client.assert(response.body.data.product_id === client.global.get("testCategoryId"), "Expected product_id to match category");
+    });
+
+    client.global.set("testProductId", response.body.data.id);
+%}
+
+###
+
+### 12. Create Product with Non-Existent Category ID (Should Fail - FK Constraint)
+POST {{host}}/products
+Content-Type: application/json
+
+{
+    "product_id": "01NONEXISTENT00000000000",
+    "name": "Invalid Product",
+    "description": "This should fail",
+    "price": 5000,
+    "stock": 10
+}
+
+> {%
+    client.test("POST /products (invalid FK) - Status is 500 (FK violation)", function() {
+        client.assert(response.status === 500, "Expected 500 for FK constraint violation");
+    });
+
+    client.test("POST /products (invalid FK) - Success is false", function() {
+        client.assert(response.body.success === false, "Expected success to be false");
+    });
+%}
+
+###
+
+### 13. Create Product with Empty Category ID
+POST {{host}}/products
+Content-Type: application/json
+
+{
+    "product_id": "",
+    "name": "No Category Product",
+    "description": "Product without category",
+    "price": 3000,
+    "stock": 5
+}
+
+> {%
+    client.test("POST /products (empty FK) - Status is not 200 or handles gracefully", function() {
+        // Depending on DB constraints, this might be 500 (FK violation) or 200 (if nullable)
+        client.assert(response.status === 500 || response.status === 200, "Expected 500 or 200");
+    });
+%}
+
+###
+
+### 14. Create Second Product (for list test)
+POST {{host}}/products
+Content-Type: application/json
+
+{
+    "product_id": "{{testCategoryId}}",
+    "name": "Second Test Product",
+    "description": "Another product",
+    "price": 25000,
+    "stock": 100
+}
+
+> {%
+    client.test("POST /products - Create second product", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.global.set("secondProductId", response.body.data.id);
+%}
+
+###
+
+### 15. Get All Products
+GET {{host}}/products
+Content-Type: application/json
+
+> {%
+    client.test("GET /products - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("GET /products - Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("GET /products - Data is an array", function() {
+        client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+    });
+
+    client.test("GET /products - Array has items", function() {
+        client.assert(response.body.data.length >= 2, "Expected at least 2 products");
+    });
+%}
+
+###
+
+### 16. Get Single Product (Success)
+GET {{host}}/products/{{testProductId}}
+Content-Type: application/json
+
+> {%
+    client.test("GET /products/:id - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("GET /products/:id - Correct product returned", function() {
+        client.assert(response.body.data.id === client.global.get("testProductId"), "Expected correct product ID");
+    });
+
+    client.test("GET /products/:id - Name matches", function() {
+        client.assert(response.body.data.name === "Test Product", "Expected name 'Test Product'");
+    });
+
+    client.test("GET /products/:id - Has all required fields", function() {
+        const data = response.body.data;
+        client.assert(data.id !== undefined, "Expected id field");
+        client.assert(data.product_id !== undefined, "Expected product_id field");
+        client.assert(data.name !== undefined, "Expected name field");
+        client.assert(data.description !== undefined, "Expected description field");
+        client.assert(data.price !== undefined, "Expected price field");
+        client.assert(data.stock !== undefined, "Expected stock field");
+    });
+%}
+
+###
+
+### 17. Get Non-Existent Product (404)
+GET {{host}}/products/01NONEXISTENT00000000000
+Content-Type: application/json
+
+> {%
+    client.test("GET /products/:id (non-existent) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for non-existent product");
+    });
+
+    client.test("GET /products/:id (non-existent) - Success is false", function() {
+        client.assert(response.body.success === false, "Expected success to be false");
+    });
+%}
+
+###
+
+### 18. Get Product with Invalid ID "1"
+GET {{host}}/products/1
+Content-Type: application/json
+
+> {%
+    client.test("GET /products/1 (invalid ID) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for invalid product ID");
+    });
+%}
+
+###
+
+### 19. Get Product with Random String ID
+GET {{host}}/products/random-invalid-id
+Content-Type: application/json
+
+> {%
+    client.test("GET /products/random-invalid-id - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for invalid product ID");
+    });
+%}
+
+###
+
+### 20. Update Product (Success)
+PUT {{host}}/products/{{testProductId}}
+Content-Type: application/json
+
+{
+    "product_id": "{{testCategoryId}}",
+    "name": "Updated Test Product",
+    "description": "Updated product description",
+    "price": 15000,
+    "stock": 75
+}
+
+> {%
+    client.test("PUT /products/:id - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("PUT /products/:id - Name was updated", function() {
+        client.assert(response.body.data.name === "Updated Test Product", "Expected updated name");
+    });
+
+    client.test("PUT /products/:id - Price was updated", function() {
+        client.assert(response.body.data.price === 15000, "Expected price 15000");
+    });
+
+    client.test("PUT /products/:id - Stock was updated", function() {
+        client.assert(response.body.data.stock === 75, "Expected stock 75");
+    });
+%}
+
+###
+
+### 21. Update Product - Change Category
+PUT {{host}}/products/{{testProductId}}
+Content-Type: application/json
+
+{
+    "product_id": "{{secondCategoryId}}",
+    "name": "Product with New Category",
+    "description": "Changed category",
+    "price": 15000,
+    "stock": 75
+}
+
+> {%
+    client.test("PUT /products/:id (change category) - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("PUT /products/:id (change category) - Category was updated", function() {
+        client.assert(response.body.data.product_id === client.global.get("secondCategoryId"), "Expected new category ID");
+    });
+%}
+
+###
+
+### 22. Update Non-Existent Product (404)
+PUT {{host}}/products/01NONEXISTENT00000000000
+Content-Type: application/json
+
+{
+    "product_id": "{{testCategoryId}}",
+    "name": "Should Fail",
+    "description": "This should not work",
+    "price": 1000,
+    "stock": 1
+}
+
+> {%
+    client.test("PUT /products/:id (non-existent) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for non-existent product");
+    });
+%}
+
+###
+
+### 23. Update Product with Invalid ID "1"
+PUT {{host}}/products/1
+Content-Type: application/json
+
+{
+    "product_id": "{{testCategoryId}}",
+    "name": "Should Fail",
+    "description": "Invalid ID",
+    "price": 1000,
+    "stock": 1
+}
+
+> {%
+    client.test("PUT /products/1 (invalid ID) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for invalid product ID");
+    });
+%}
+
+###
+
+### 24. Update Product with Non-Existent Category ID (FK Violation)
+PUT {{host}}/products/{{testProductId}}
+Content-Type: application/json
+
+{
+    "product_id": "01NONEXISTENT00000000000",
+    "name": "FK Violation Test",
+    "description": "Should fail",
+    "price": 1000,
+    "stock": 1
+}
+
+> {%
+    client.test("PUT /products/:id (invalid FK) - Status is 500", function() {
+        client.assert(response.status === 500, "Expected 500 for FK constraint violation");
+    });
+%}
+
+###
+
+### --------------------------------------------
+### CLEANUP - Delete Test Data
+### --------------------------------------------
+
+### 25. Delete Second Product
+DELETE {{host}}/products/{{secondProductId}}
+Content-Type: application/json
+
+> {%
+    client.test("DELETE /products/:id (second) - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("DELETE /products/:id (second) - Delete message returned", function() {
+        client.assert(response.body.data.message === "Product deleted", "Expected deletion message");
+    });
+%}
+
+###
+
+### 26. Delete First Product
+DELETE {{host}}/products/{{testProductId}}
+Content-Type: application/json
+
+> {%
+    client.test("DELETE /products/:id - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("DELETE /products/:id - Delete message returned", function() {
+        client.assert(response.body.data.message === "Product deleted", "Expected deletion message");
+    });
+%}
+
+###
+
+### 27. Delete Non-Existent Product (404)
+DELETE {{host}}/products/01NONEXISTENT00000000000
+Content-Type: application/json
+
+> {%
+    client.test("DELETE /products/:id (non-existent) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for non-existent product");
+    });
+%}
+
+###
+
+### 28. Delete Product with Invalid ID "1"
+DELETE {{host}}/products/1
+Content-Type: application/json
+
+> {%
+    client.test("DELETE /products/1 (invalid ID) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for invalid product ID");
+    });
+%}
+
+###
+
+### 29. Verify Product was Deleted (Should be 404)
+GET {{host}}/products/{{testProductId}}
+Content-Type: application/json
+
+> {%
+    client.test("GET /products/:id (after delete) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for deleted product");
+    });
+%}
+
+###
+
+### 30. Delete Second Category
+DELETE {{host}}/categories/{{secondCategoryId}}
+Content-Type: application/json
+
+> {%
+    client.test("DELETE /categories/:id (second) - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+
+### 31. Delete First Category
+DELETE {{host}}/categories/{{testCategoryId}}
+Content-Type: application/json
+
+> {%
+    client.test("DELETE /categories/:id - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("DELETE /categories/:id - Delete message returned", function() {
+        client.assert(response.body.data.message === "Category deleted", "Expected deletion message");
+    });
+%}
+
+###
+
+### 32. Verify Category was Deleted (Should be 404)
+GET {{host}}/categories/{{testCategoryId}}
+Content-Type: application/json
+
+> {%
+    client.test("GET /categories/:id (after delete) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for deleted category");
+    });
+%}
+
+###
+
+### ============================================
+### TEST SUITE COMPLETE
+### ============================================
+### Total: 32 requests covering:
+### - Category CRUD operations
+### - Product CRUD operations
+### - Non-existent resource handling (404)
+### - Invalid ID formats ("1", random strings)
+### - Foreign key constraint violations
+### - Cleanup verification
+### ============================================

@@ -1,5 +1,5 @@
-### Delete a category
-DELETE {{host}}/categories/{{categoryId}}
+### Delete a product
+DELETE {{host}}/products/{{productId}}
 Content-Type: application/json
 
 > {%
@@ -12,7 +12,7 @@ Content-Type: application/json
     });
 
     client.test("Delete message returned", function() {
-        client.assert(response.body.data.message === "Category deleted", "Expected deletion message");
+        client.assert(response.body.data.message === "Product deleted", "Expected deletion message");
     });
 %}
 

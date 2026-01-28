@@ -1,5 +1,19 @@
 ### Show a category
-GET http://localhost:8080/categories/01KFJXCN3V6MQXBR87YPAHDCAG
+GET {{host}}/categories/{{categoryId}}
 Content-Type: application/json
+
+> {%
+    client.test("Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("Category ID matches", function() {
+        client.assert(response.body.data.id === client.global.get("categoryId"), "ID does not match");
+    });
+%}
 
 ###

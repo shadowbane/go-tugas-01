@@ -1,5 +1,5 @@
-### Delete a category
-DELETE {{host}}/categories/{{categoryId}}
+### GET products
+GET {{host}}/products
 Content-Type: application/json
 
 > {%
@@ -11,8 +11,8 @@ Content-Type: application/json
         client.assert(response.body.success === true, "Expected success to be true");
     });
 
-    client.test("Delete message returned", function() {
-        client.assert(response.body.data.message === "Category deleted", "Expected deletion message");
+    client.test("Data is an array", function() {
+        client.assert(Array.isArray(response.body.data), "Expected data to be an array");
     });
 %}
 

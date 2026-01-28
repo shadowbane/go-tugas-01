@@ -1,0 +1,41 @@
+### Create product
+POST {{host}}/products
+Content-Type: application/json
+
+{
+    "product_id": "{{categoryId}}",
+    "name": "Coca Cola",
+    "description": "Carbonated soft drink",
+    "price": 5000,
+    "stock": 100
+}
+
+> {%
+    client.test("Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("Product has an ID (ULID)", function() {
+        client.assert(response.body.data.id !== undefined && response.body.data.id !== "", "Expected ID");
+    });
+
+    client.test("Product name matches", function() {
+        client.assert(response.body.data.name === "Coca Cola", "Expected name 'Coca Cola'");
+    });
+
+    client.test("Product description matches", function() {
+        client.assert(response.body.data.description === "Carbonated soft drink", "Expected description");
+    });
+
+    client.test("Product price matches", function() {
+        client.assert(response.body.data.price === 5000, "Expected price 5000");
+    });
+
+    client.global.set("productId", response.body.data.id);
+%}
+
+###

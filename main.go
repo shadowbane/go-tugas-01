@@ -5,27 +5,49 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/shadowbane/go-logger"
-	"github.com/shadowbane/go-tugas-01/app/exithandler"
-	"github.com/shadowbane/go-tugas-01/app/server"
+	"github.com/shadowbane/go-tugas-01/handlers"
+	"github.com/shadowbane/go-tugas-01/pkg/config"
+	"github.com/shadowbane/go-tugas-01/pkg/database"
+	"github.com/shadowbane/go-tugas-01/pkg/exithandler"
+	"github.com/shadowbane/go-tugas-01/pkg/server"
+	"github.com/shadowbane/go-tugas-01/repositories"
 	"github.com/shadowbane/go-tugas-01/router"
+	"github.com/shadowbane/go-tugas-01/services"
 	"go.uber.org/zap"
 )
 
-var ApiPort = "0.0.0.0:8080"
-
 func main() {
-	logger.Init(logger.LoadEnvForLogger())
+	cfg := config.Get()
+
+	// Setup database
+	db, err := database.InitDB(cfg.GetPSQLConnectionString())
+	if err != nil {
+		zap.S().Fatal("Failed to initialize database: ", err)
+	}
+
+	// Dependency Injection
+	// Note to mentor: IDK if you read this,
+	//  but I hate this pattern. lol. v(^_^)
+	categoryRepo := repositories.NewCategoryRepository(db)
+	categoryService := services.NewCategoryService(categoryRepo)
+
+	productRepo := repositories.NewProductRepository(db)
+	productService := services.NewProductService(productRepo)
+
+	globalHandler := &handlers.Handler{
+		CategoryHandler: handlers.NewCategoryHandler(categoryService),
+		ProductHandler:  handlers.NewProductHandler(productService),
+	}
 
 	srv := server.
 		Get().
-		WithAddr(ApiPort).
-		WithRouter(router.Api()).
+		WithAddr(cfg.GetAddr()).
+		WithRouter(router.Api(globalHandler)).
 		WithErrLogger(zap.S())
 
 	// start the api server
 	go func() {
-		zap.S().Info("starting api server at ", ApiPort)
+		zap.S().Info("starting api server at ", cfg.GetAddr())
 
 		// Note to self: this should fix the issue on dockerized app,
 		// where the server cannot start (when not using traefik)
@@ -45,6 +67,10 @@ func main() {
 
 		if err := srv.Close(); err != nil {
 			zap.S().Error(err.Error())
+		}
+
+		if err := db.Close(); err != nil {
+			zap.S().Error("Error closing database: ", err)
 		}
 
 		zap.S().Info("Application Closed")

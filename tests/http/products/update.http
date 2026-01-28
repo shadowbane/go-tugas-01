@@ -1,0 +1,39 @@
+### Update a product
+PUT {{host}}/products/{{productId}}
+Content-Type: application/json
+
+{
+    "product_id": "{{categoryId}}",
+    "name": "Coca Cola Zero",
+    "description": "Sugar-free carbonated soft drink",
+    "price": 7000,
+    "stock": 50
+}
+
+> {%
+    client.test("Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("Name was updated", function() {
+        client.assert(response.body.data.name === "Coca Cola Zero", "Expected name 'Coca Cola Zero'");
+    });
+
+    client.test("Description was updated", function() {
+        client.assert(response.body.data.description === "Sugar-free carbonated soft drink", "Expected updated description");
+    });
+
+    client.test("Price was updated", function() {
+        client.assert(response.body.data.price === 7000, "Expected price 7000");
+    });
+
+    client.test("Stock was updated", function() {
+        client.assert(response.body.data.stock === 50, "Expected stock 50");
+    });
+%}
+
+###

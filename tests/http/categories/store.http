@@ -1,10 +1,30 @@
-### Create categories
-POST http://localhost:8080/categories
+### Create category
+POST {{host}}/categories
 Content-Type: application/json
 
 {
     "name": "Soft Drink",
     "description": "All soft drinks (ex: Coca Cola, Pepsi)"
 }
+
+> {%
+    client.test("Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("Category has an ID", function() {
+        client.assert(response.body.data.id !== undefined && response.body.data.id !== "", "Expected ID");
+    });
+
+    client.test("Category name matches", function() {
+        client.assert(response.body.data.name === "Soft Drink", "Expected name 'Soft Drink'");
+    });
+
+    client.global.set("categoryId", response.body.data.id);
+%}
 
 ###

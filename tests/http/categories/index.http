@@ -1,5 +1,19 @@
 ### GET categories
-GET http://localhost:8080/categories
+GET {{host}}/categories
 Content-Type: application/json
+
+> {%
+    client.test("Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("Data is an array", function() {
+        client.assert(Array.isArray(response.body.data), "Expected data to be an array");
+    });
+%}
 
 ###

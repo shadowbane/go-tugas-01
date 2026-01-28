@@ -1,0 +1,31 @@
+### Show a product
+GET {{host}}/products/{{productId}}
+Content-Type: application/json
+
+> {%
+    client.test("Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("Product has correct ID", function() {
+        client.assert(response.body.data.id === client.global.get("productId"), "Expected correct product ID");
+    });
+
+    client.test("Product has correct name", function() {
+        client.assert(response.body.data.name === "Coca Cola", "Expected name 'Coca Cola'");
+    });
+
+    client.test("Product has description", function() {
+        client.assert(response.body.data.description !== undefined, "Expected description field");
+    });
+
+    client.test("Product has product_id (FK)", function() {
+        client.assert(response.body.data.product_id === client.global.get("categoryId"), "Expected product_id to match categoryId");
+    });
+%}
+
+###
