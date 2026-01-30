@@ -54,46 +54,71 @@ func (r *CategoryRepository) GetByID(id string) (models.Category, error) {
 }
 
 func (r *CategoryRepository) Create(category *models.Category) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
 	query := "INSERT INTO categories (id, name, description) VALUES ($1, $2, $3)"
-	_, err := r.db.Exec(query, category.ID, category.Name, category.Description)
-	return err
+	_, err = tx.Exec(query, category.ID, category.Name, category.Description)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (r *CategoryRepository) Update(id string, category *models.Category) error {
-	query := "UPDATE categories SET name = $1, description = $2 WHERE id = $3"
-	result, err := r.db.Exec(query, category.Name, category.Description, id)
+	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
-	rows, err := result.RowsAffected()
+	// Lock the row first to prevent concurrent updates
+	var exists bool
+	err = tx.QueryRow("SELECT EXISTS(SELECT 1 FROM categories WHERE id = $1 FOR UPDATE)", id).Scan(&exists)
 	if err != nil {
 		return err
 	}
-
-	if rows == 0 {
+	if !exists {
 		return ErrCategoryNotFound
+	}
+
+	// Now safe to update - row is locked
+	query := "UPDATE categories SET name = $1, description = $2 WHERE id = $3"
+	_, err = tx.Exec(query, category.Name, category.Description, id)
+	if err != nil {
+		return err
 	}
 
 	category.ID = id
-	return nil
+	return tx.Commit()
 }
 
 func (r *CategoryRepository) Delete(id string) error {
-	query := "DELETE FROM categories WHERE id = $1"
-	result, err := r.db.Exec(query, id)
+	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
-	rows, err := result.RowsAffected()
+	// Lock the row first to prevent concurrent modifications
+	var exists bool
+	err = tx.QueryRow("SELECT EXISTS(SELECT 1 FROM categories WHERE id = $1 FOR UPDATE)", id).Scan(&exists)
 	if err != nil {
 		return err
 	}
-
-	if rows == 0 {
+	if !exists {
 		return ErrCategoryNotFound
 	}
 
-	return nil
+	// Now safe to delete - row is locked
+	_, err = tx.Exec("DELETE FROM categories WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }

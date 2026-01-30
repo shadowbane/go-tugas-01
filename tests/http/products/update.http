@@ -3,7 +3,7 @@ PUT {{host}}/products/{{productId}}
 Content-Type: application/json
 
 {
-    "product_id": "{{categoryId}}",
+    "category_id": "{{categoryId}}",
     "name": "Coca Cola Zero",
     "description": "Sugar-free carbonated soft drink",
     "price": 7000,

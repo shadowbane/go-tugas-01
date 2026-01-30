@@ -23,8 +23,8 @@ Content-Type: application/json
         client.assert(response.body.data.description !== undefined, "Expected description field");
     });
 
-    client.test("Product has product_id (FK)", function() {
-        client.assert(response.body.data.product_id === client.global.get("categoryId"), "Expected product_id to match categoryId");
+    client.test("Product has category_id (FK)", function() {
+        client.assert(response.body.data.category_id === client.global.get("categoryId"), "Expected category_id to match categoryId");
     });
 %}
 

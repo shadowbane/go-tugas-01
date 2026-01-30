@@ -18,7 +18,7 @@ func NewProductRepository(db *sql.DB) *ProductRepository {
 }
 
 func (r *ProductRepository) GetAll() ([]models.Product, error) {
-	query := "SELECT id, product_id, name, description, price, stock FROM products"
+	query := "SELECT id, category_id, name, (SELECT name FROM categories WHERE categories.id = category_id) as category, description, price, stock FROM products"
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (r *ProductRepository) GetAll() ([]models.Product, error) {
 	products := make([]models.Product, 0)
 	for rows.Next() {
 		var p models.Product
-		err := rows.Scan(&p.ID, &p.ProductId, &p.Name, &p.Description, &p.Price, &p.Stock)
+		err := rows.Scan(&p.ID, &p.CategoryId, &p.Name, &p.Category, &p.Description, &p.Price, &p.Stock)
 		if err != nil {
 			return nil, err
 		}
@@ -39,10 +39,10 @@ func (r *ProductRepository) GetAll() ([]models.Product, error) {
 }
 
 func (r *ProductRepository) GetByID(id string) (models.Product, error) {
-	query := "SELECT id, product_id, name, description, price, stock FROM products WHERE id = $1"
+	query := "SELECT id, category_id, name, (SELECT name FROM categories WHERE categories.id = category_id) as category, description, price, stock FROM products WHERE id = $1"
 
 	var p models.Product
-	err := r.db.QueryRow(query, id).Scan(&p.ID, &p.ProductId, &p.Name, &p.Description, &p.Price, &p.Stock)
+	err := r.db.QueryRow(query, id).Scan(&p.ID, &p.CategoryId, &p.Name, &p.Category, &p.Description, &p.Price, &p.Stock)
 	if err == sql.ErrNoRows {
 		return models.Product{}, ErrProductNotFound
 	}
@@ -54,46 +54,71 @@ func (r *ProductRepository) GetByID(id string) (models.Product, error) {
 }
 
 func (r *ProductRepository) Create(product *models.Product) error {
-	query := "INSERT INTO products (id, product_id, name, description, price, stock) VALUES ($1, $2, $3, $4, $5, $6)"
-	_, err := r.db.Exec(query, product.ID, product.ProductId, product.Name, product.Description, product.Price, product.Stock)
-	return err
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	query := "INSERT INTO products (id, category_id, name, description, price, stock) VALUES ($1, $2, $3, $4, $5, $6)"
+	_, err = tx.Exec(query, product.ID, product.CategoryId, product.Name, product.Description, product.Price, product.Stock)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (r *ProductRepository) Update(id string, product *models.Product) error {
-	query := "UPDATE products SET product_id = $1, name = $2, description = $3, price = $4, stock = $5 WHERE id = $6"
-	result, err := r.db.Exec(query, product.ProductId, product.Name, product.Description, product.Price, product.Stock, id)
+	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
-	rows, err := result.RowsAffected()
+	// Lock the row first to prevent concurrent updates
+	var exists bool
+	err = tx.QueryRow("SELECT EXISTS(SELECT 1 FROM products WHERE id = $1 FOR UPDATE)", id).Scan(&exists)
 	if err != nil {
 		return err
 	}
-
-	if rows == 0 {
+	if !exists {
 		return ErrProductNotFound
+	}
+
+	// Now safe to update - row is locked
+	query := "UPDATE products SET category_id = $1, name = $2, description = $3, price = $4, stock = $5 WHERE id = $6"
+	_, err = tx.Exec(query, product.CategoryId, product.Name, product.Description, product.Price, product.Stock, id)
+	if err != nil {
+		return err
 	}
 
 	product.ID = id
-	return nil
+	return tx.Commit()
 }
 
 func (r *ProductRepository) Delete(id string) error {
-	query := "DELETE FROM products WHERE id = $1"
-	result, err := r.db.Exec(query, id)
+	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
-	rows, err := result.RowsAffected()
+	// Lock the row first to prevent concurrent modifications
+	var exists bool
+	err = tx.QueryRow("SELECT EXISTS(SELECT 1 FROM products WHERE id = $1 FOR UPDATE)", id).Scan(&exists)
 	if err != nil {
 		return err
 	}
-
-	if rows == 0 {
+	if !exists {
 		return ErrProductNotFound
 	}
 
-	return nil
+	// Now safe to delete - row is locked
+	_, err = tx.Exec("DELETE FROM products WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }

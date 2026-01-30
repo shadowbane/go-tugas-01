@@ -204,7 +204,7 @@ POST {{host}}/products
 Content-Type: application/json
 
 {
-    "product_id": "{{testCategoryId}}",
+    "category_id": "{{testCategoryId}}",
     "name": "Test Product",
     "description": "Product for testing",
     "price": 10000,
@@ -236,8 +236,8 @@ Content-Type: application/json
         client.assert(response.body.data.stock === 50, "Expected stock 50");
     });
 
-    client.test("POST /products - product_id (FK) matches", function() {
-        client.assert(response.body.data.product_id === client.global.get("testCategoryId"), "Expected product_id to match category");
+    client.test("POST /products - category_id (FK) matches", function() {
+        client.assert(response.body.data.category_id === client.global.get("testCategoryId"), "Expected category_id to match category");
     });
 
     client.global.set("testProductId", response.body.data.id);
@@ -250,7 +250,7 @@ POST {{host}}/products
 Content-Type: application/json
 
 {
-    "product_id": "01NONEXISTENT00000000000",
+    "category_id": "01NONEXISTENT00000000000",
     "name": "Invalid Product",
     "description": "This should fail",
     "price": 5000,
@@ -274,7 +274,7 @@ POST {{host}}/products
 Content-Type: application/json
 
 {
-    "product_id": "",
+    "category_id": "",
     "name": "No Category Product",
     "description": "Product without category",
     "price": 3000,
@@ -295,7 +295,7 @@ POST {{host}}/products
 Content-Type: application/json
 
 {
-    "product_id": "{{testCategoryId}}",
+    "category_id": "{{testCategoryId}}",
     "name": "Second Test Product",
     "description": "Another product",
     "price": 25000,
@@ -356,7 +356,7 @@ Content-Type: application/json
     client.test("GET /products/:id - Has all required fields", function() {
         const data = response.body.data;
         client.assert(data.id !== undefined, "Expected id field");
-        client.assert(data.product_id !== undefined, "Expected product_id field");
+        client.assert(data.category_id !== undefined, "Expected category_id field");
         client.assert(data.name !== undefined, "Expected name field");
         client.assert(data.description !== undefined, "Expected description field");
         client.assert(data.price !== undefined, "Expected price field");
@@ -411,7 +411,7 @@ PUT {{host}}/products/{{testProductId}}
 Content-Type: application/json
 
 {
-    "product_id": "{{testCategoryId}}",
+    "category_id": "{{testCategoryId}}",
     "name": "Updated Test Product",
     "description": "Updated product description",
     "price": 15000,
@@ -443,7 +443,7 @@ PUT {{host}}/products/{{testProductId}}
 Content-Type: application/json
 
 {
-    "product_id": "{{secondCategoryId}}",
+    "category_id": "{{secondCategoryId}}",
     "name": "Product with New Category",
     "description": "Changed category",
     "price": 15000,
@@ -456,7 +456,7 @@ Content-Type: application/json
     });
 
     client.test("PUT /products/:id (change category) - Category was updated", function() {
-        client.assert(response.body.data.product_id === client.global.get("secondCategoryId"), "Expected new category ID");
+        client.assert(response.body.data.category_id === client.global.get("secondCategoryId"), "Expected new category ID");
     });
 %}
 
@@ -467,7 +467,7 @@ PUT {{host}}/products/01NONEXISTENT00000000000
 Content-Type: application/json
 
 {
-    "product_id": "{{testCategoryId}}",
+    "category_id": "{{testCategoryId}}",
     "name": "Should Fail",
     "description": "This should not work",
     "price": 1000,
@@ -487,7 +487,7 @@ PUT {{host}}/products/1
 Content-Type: application/json
 
 {
-    "product_id": "{{testCategoryId}}",
+    "category_id": "{{testCategoryId}}",
     "name": "Should Fail",
     "description": "Invalid ID",
     "price": 1000,
@@ -507,7 +507,7 @@ PUT {{host}}/products/{{testProductId}}
 Content-Type: application/json
 
 {
-    "product_id": "01NONEXISTENT00000000000",
+    "category_id": "01NONEXISTENT00000000000",
     "name": "FK Violation Test",
     "description": "Should fail",
     "price": 1000,
