@@ -1,5 +1,5 @@
 ### GET products
-GET {{host}}/products
+GET {{host}}/api/products
 Content-Type: application/json
 
 > {%

@@ -35,9 +35,13 @@ func main() {
 	productRepo := repositories.NewProductRepository(db)
 	productService := services.NewProductService(productRepo)
 
+	transactionRepo := repositories.NewTransactionRepository(db)
+	transactionService := services.NewTransactionService(transactionRepo)
+
 	globalHandler := &handlers.Handler{
-		CategoryHandler: handlers.NewCategoryHandler(categoryService),
-		ProductHandler:  handlers.NewProductHandler(productService),
+		CategoryHandler:    handlers.NewCategoryHandler(categoryService),
+		ProductHandler:     handlers.NewProductHandler(productService),
+		TransactionHandler: handlers.NewTransactionHandler(transactionService),
 	}
 
 	srv := server.

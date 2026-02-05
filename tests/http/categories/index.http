@@ -1,5 +1,5 @@
 ### GET categories
-GET {{host}}/categories
+GET {{host}}/api/categories
 Content-Type: application/json
 
 > {%

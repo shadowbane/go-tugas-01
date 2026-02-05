@@ -1,5 +1,5 @@
 ### Create product
-POST {{host}}/products
+POST {{host}}/api/products
 Content-Type: application/json
 
 {

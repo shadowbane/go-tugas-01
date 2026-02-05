@@ -1,5 +1,5 @@
 ### Update a category
-PUT {{host}}/categories/{{categoryId}}
+PUT {{host}}/api/categories/{{categoryId}}
 Content-Type: application/json
 
 {

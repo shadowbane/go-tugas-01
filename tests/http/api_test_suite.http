@@ -8,7 +8,7 @@
 ### --------------------------------------------
 
 ### 1. Create Category (Success)
-POST {{host}}/categories
+POST {{host}}/api/categories
 Content-Type: application/json
 
 {
@@ -39,7 +39,7 @@ Content-Type: application/json
 ###
 
 ### 2. Create Second Category (for additional tests)
-POST {{host}}/categories
+POST {{host}}/api/categories
 Content-Type: application/json
 
 {
@@ -58,7 +58,7 @@ Content-Type: application/json
 ###
 
 ### 3. Get All Categories
-GET {{host}}/categories
+GET {{host}}/api/categories
 Content-Type: application/json
 
 > {%
@@ -82,7 +82,7 @@ Content-Type: application/json
 ###
 
 ### 4. Get Single Category (Success)
-GET {{host}}/categories/{{testCategoryId}}
+GET {{host}}/api/categories/{{testCategoryId}}
 Content-Type: application/json
 
 > {%
@@ -102,7 +102,7 @@ Content-Type: application/json
 ###
 
 ### 5. Get Non-Existent Category (404)
-GET {{host}}/categories/01NONEXISTENT00000000000
+GET {{host}}/api/categories/01NONEXISTENT00000000000
 Content-Type: application/json
 
 > {%
@@ -118,7 +118,7 @@ Content-Type: application/json
 ###
 
 ### 6. Get Category with Invalid ID "1"
-GET {{host}}/categories/1
+GET {{host}}/api/categories/1
 Content-Type: application/json
 
 > {%
@@ -130,7 +130,7 @@ Content-Type: application/json
 ###
 
 ### 7. Update Category (Success)
-PUT {{host}}/categories/{{testCategoryId}}
+PUT {{host}}/api/categories/{{testCategoryId}}
 Content-Type: application/json
 
 {
@@ -155,7 +155,7 @@ Content-Type: application/json
 ###
 
 ### 8. Update Non-Existent Category (404)
-PUT {{host}}/categories/01NONEXISTENT00000000000
+PUT {{host}}/api/categories/01NONEXISTENT00000000000
 Content-Type: application/json
 
 {
@@ -172,7 +172,7 @@ Content-Type: application/json
 ###
 
 ### 9. Delete Non-Existent Category (404)
-DELETE {{host}}/categories/01NONEXISTENT00000000000
+DELETE {{host}}/api/categories/01NONEXISTENT00000000000
 Content-Type: application/json
 
 > {%
@@ -184,7 +184,7 @@ Content-Type: application/json
 ###
 
 ### 10. Delete Category with Invalid ID "1"
-DELETE {{host}}/categories/1
+DELETE {{host}}/api/categories/1
 Content-Type: application/json
 
 > {%
@@ -200,7 +200,7 @@ Content-Type: application/json
 ### --------------------------------------------
 
 ### 11. Create Product (Success)
-POST {{host}}/products
+POST {{host}}/api/products
 Content-Type: application/json
 
 {
@@ -246,7 +246,7 @@ Content-Type: application/json
 ###
 
 ### 12. Create Product with Non-Existent Category ID (Should Fail - FK Constraint)
-POST {{host}}/products
+POST {{host}}/api/products
 Content-Type: application/json
 
 {
@@ -270,7 +270,7 @@ Content-Type: application/json
 ###
 
 ### 13. Create Product with Empty Category ID
-POST {{host}}/products
+POST {{host}}/api/products
 Content-Type: application/json
 
 {
@@ -291,7 +291,7 @@ Content-Type: application/json
 ###
 
 ### 14. Create Second Product (for list test)
-POST {{host}}/products
+POST {{host}}/api/products
 Content-Type: application/json
 
 {
@@ -313,7 +313,7 @@ Content-Type: application/json
 ###
 
 ### 15. Get All Products
-GET {{host}}/products
+GET {{host}}/api/products
 Content-Type: application/json
 
 > {%
@@ -337,7 +337,7 @@ Content-Type: application/json
 ###
 
 ### 16. Get Single Product (Success)
-GET {{host}}/products/{{testProductId}}
+GET {{host}}/api/products/{{testProductId}}
 Content-Type: application/json
 
 > {%
@@ -367,7 +367,7 @@ Content-Type: application/json
 ###
 
 ### 17. Get Non-Existent Product (404)
-GET {{host}}/products/01NONEXISTENT00000000000
+GET {{host}}/api/products/01NONEXISTENT00000000000
 Content-Type: application/json
 
 > {%
@@ -383,7 +383,7 @@ Content-Type: application/json
 ###
 
 ### 18. Get Product with Invalid ID "1"
-GET {{host}}/products/1
+GET {{host}}/api/products/1
 Content-Type: application/json
 
 > {%
@@ -395,7 +395,7 @@ Content-Type: application/json
 ###
 
 ### 19. Get Product with Random String ID
-GET {{host}}/products/random-invalid-id
+GET {{host}}/api/products/random-invalid-id
 Content-Type: application/json
 
 > {%
@@ -407,7 +407,7 @@ Content-Type: application/json
 ###
 
 ### 20. Update Product (Success)
-PUT {{host}}/products/{{testProductId}}
+PUT {{host}}/api/products/{{testProductId}}
 Content-Type: application/json
 
 {
@@ -439,7 +439,7 @@ Content-Type: application/json
 ###
 
 ### 21. Update Product - Change Category
-PUT {{host}}/products/{{testProductId}}
+PUT {{host}}/api/products/{{testProductId}}
 Content-Type: application/json
 
 {
@@ -463,7 +463,7 @@ Content-Type: application/json
 ###
 
 ### 22. Update Non-Existent Product (404)
-PUT {{host}}/products/01NONEXISTENT00000000000
+PUT {{host}}/api/products/01NONEXISTENT00000000000
 Content-Type: application/json
 
 {
@@ -483,7 +483,7 @@ Content-Type: application/json
 ###
 
 ### 23. Update Product with Invalid ID "1"
-PUT {{host}}/products/1
+PUT {{host}}/api/products/1
 Content-Type: application/json
 
 {
@@ -503,7 +503,7 @@ Content-Type: application/json
 ###
 
 ### 24. Update Product with Non-Existent Category ID (FK Violation)
-PUT {{host}}/products/{{testProductId}}
+PUT {{host}}/api/products/{{testProductId}}
 Content-Type: application/json
 
 {
@@ -527,7 +527,7 @@ Content-Type: application/json
 ### --------------------------------------------
 
 ### 25. Delete Second Product
-DELETE {{host}}/products/{{secondProductId}}
+DELETE {{host}}/api/products/{{secondProductId}}
 Content-Type: application/json
 
 > {%
@@ -543,7 +543,7 @@ Content-Type: application/json
 ###
 
 ### 26. Delete First Product
-DELETE {{host}}/products/{{testProductId}}
+DELETE {{host}}/api/products/{{testProductId}}
 Content-Type: application/json
 
 > {%
@@ -559,7 +559,7 @@ Content-Type: application/json
 ###
 
 ### 27. Delete Non-Existent Product (404)
-DELETE {{host}}/products/01NONEXISTENT00000000000
+DELETE {{host}}/api/products/01NONEXISTENT00000000000
 Content-Type: application/json
 
 > {%
@@ -571,7 +571,7 @@ Content-Type: application/json
 ###
 
 ### 28. Delete Product with Invalid ID "1"
-DELETE {{host}}/products/1
+DELETE {{host}}/api/products/1
 Content-Type: application/json
 
 > {%
@@ -583,7 +583,7 @@ Content-Type: application/json
 ###
 
 ### 29. Verify Product was Deleted (Should be 404)
-GET {{host}}/products/{{testProductId}}
+GET {{host}}/api/products/{{testProductId}}
 Content-Type: application/json
 
 > {%
@@ -595,7 +595,7 @@ Content-Type: application/json
 ###
 
 ### 30. Delete Second Category
-DELETE {{host}}/categories/{{secondCategoryId}}
+DELETE {{host}}/api/categories/{{secondCategoryId}}
 Content-Type: application/json
 
 > {%
@@ -607,7 +607,7 @@ Content-Type: application/json
 ###
 
 ### 31. Delete First Category
-DELETE {{host}}/categories/{{testCategoryId}}
+DELETE {{host}}/api/categories/{{testCategoryId}}
 Content-Type: application/json
 
 > {%
@@ -623,7 +623,7 @@ Content-Type: application/json
 ###
 
 ### 32. Verify Category was Deleted (Should be 404)
-GET {{host}}/categories/{{testCategoryId}}
+GET {{host}}/api/categories/{{testCategoryId}}
 Content-Type: application/json
 
 > {%

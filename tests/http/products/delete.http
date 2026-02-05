@@ -1,5 +1,5 @@
 ### Delete a product
-DELETE {{host}}/products/{{productId}}
+DELETE {{host}}/api/products/{{productId}}
 Content-Type: application/json
 
 > {%

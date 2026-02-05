@@ -1,5 +1,5 @@
 ### Show a category
-GET {{host}}/categories/{{categoryId}}
+GET {{host}}/api/categories/{{categoryId}}
 Content-Type: application/json
 
 > {%

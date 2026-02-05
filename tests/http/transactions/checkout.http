@@ -1,0 +1,333 @@
+### ============================================
+### Checkout / Transaction Tests
+### ============================================
+
+### Setup: Create a category for test products
+POST {{host}}/api/categories
+Content-Type: application/json
+
+{
+    "name": "Checkout Test Category",
+    "description": "Category for checkout testing"
+}
+
+> {%
+    client.test("Setup - Create category", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.global.set("checkoutCategoryId", response.body.data.id);
+%}
+
+###
+
+### Setup: Create first product for checkout
+POST {{host}}/api/products
+Content-Type: application/json
+
+{
+    "category_id": "{{checkoutCategoryId}}",
+    "name": "Checkout Product A",
+    "description": "First product for checkout test",
+    "price": 10000,
+    "stock": 50
+}
+
+> {%
+    client.test("Setup - Create product A", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.global.set("checkoutProductA", response.body.data.id);
+    client.global.set("checkoutProductAStock", response.body.data.stock);
+    client.global.set("checkoutProductAPrice", response.body.data.price);
+%}
+
+###
+
+### Setup: Create second product for checkout
+POST {{host}}/api/products
+Content-Type: application/json
+
+{
+    "category_id": "{{checkoutCategoryId}}",
+    "name": "Checkout Product B",
+    "description": "Second product for checkout test",
+    "price": 25000,
+    "stock": 30
+}
+
+> {%
+    client.test("Setup - Create product B", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.global.set("checkoutProductB", response.body.data.id);
+    client.global.set("checkoutProductBStock", response.body.data.stock);
+    client.global.set("checkoutProductBPrice", response.body.data.price);
+%}
+
+###
+
+### --------------------------------------------
+### CHECKOUT TESTS
+### --------------------------------------------
+
+### 1. Checkout with single item (Success)
+POST {{host}}/api/checkout
+Content-Type: application/json
+
+{
+    "items": [
+        {"product_id": "{{checkoutProductA}}", "quantity": 2}
+    ]
+}
+
+> {%
+    client.test("POST /checkout (single item) - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("POST /checkout (single item) - Response is successful", function() {
+        client.assert(response.body.success === true, "Expected success to be true");
+    });
+
+    client.test("POST /checkout (single item) - Transaction has ULID", function() {
+        client.assert(response.body.data.id !== undefined && response.body.data.id.length === 26, "Expected 26-char ULID");
+    });
+
+    client.test("POST /checkout (single item) - Total amount is correct", function() {
+        // 2 x 10000 = 20000
+        client.assert(response.body.data.total_amount === 20000, "Expected total 20000");
+    });
+
+    client.test("POST /checkout (single item) - Has created_at timestamp", function() {
+        client.assert(response.body.data.created_at !== undefined, "Expected created_at");
+    });
+
+    client.test("POST /checkout (single item) - Has details array", function() {
+        client.assert(Array.isArray(response.body.data.details), "Expected details array");
+        client.assert(response.body.data.details.length === 1, "Expected 1 detail");
+    });
+
+    client.test("POST /checkout (single item) - Detail has correct data", function() {
+        const detail = response.body.data.details[0];
+        client.assert(detail.product_id === client.global.get("checkoutProductA"), "Expected correct product_id");
+        client.assert(detail.quantity === 2, "Expected quantity 2");
+        client.assert(detail.subtotal === 20000, "Expected subtotal 20000");
+    });
+
+    client.global.set("transactionId1", response.body.data.id);
+%}
+
+###
+
+### 2. Verify stock was decremented after checkout
+GET {{host}}/api/products/{{checkoutProductA}}
+Content-Type: application/json
+
+> {%
+    client.test("GET /products - Stock decremented", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("GET /products - Stock is now 48", function() {
+        // Original: 50, bought: 2, remaining: 48
+        client.assert(response.body.data.stock === 48, "Expected stock 48 after checkout");
+    });
+%}
+
+###
+
+### 3. Checkout with multiple items (Success)
+POST {{host}}/api/checkout
+Content-Type: application/json
+
+{
+    "items": [
+        {"product_id": "{{checkoutProductA}}", "quantity": 3},
+        {"product_id": "{{checkoutProductB}}", "quantity": 2}
+    ]
+}
+
+> {%
+    client.test("POST /checkout (multiple items) - Status is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("POST /checkout (multiple items) - Total amount is correct", function() {
+        // (3 x 10000) + (2 x 25000) = 30000 + 50000 = 80000
+        client.assert(response.body.data.total_amount === 80000, "Expected total 80000");
+    });
+
+    client.test("POST /checkout (multiple items) - Has 2 details", function() {
+        client.assert(response.body.data.details.length === 2, "Expected 2 details");
+    });
+
+    client.global.set("transactionId2", response.body.data.id);
+%}
+
+###
+
+### 4. Verify both products' stock was decremented
+GET {{host}}/api/products/{{checkoutProductA}}
+Content-Type: application/json
+
+> {%
+    client.test("GET /products A - Stock is now 45", function() {
+        // Was 48, bought 3 more, remaining: 45
+        client.assert(response.body.data.stock === 45, "Expected stock 45");
+    });
+%}
+
+###
+
+GET {{host}}/api/products/{{checkoutProductB}}
+Content-Type: application/json
+
+> {%
+    client.test("GET /products B - Stock is now 28", function() {
+        // Original: 30, bought: 2, remaining: 28
+        client.assert(response.body.data.stock === 28, "Expected stock 28");
+    });
+%}
+
+###
+
+### --------------------------------------------
+### ERROR CASES
+### --------------------------------------------
+
+### 5. Checkout with empty cart (400)
+POST {{host}}/api/checkout
+Content-Type: application/json
+
+{
+    "items": []
+}
+
+> {%
+    client.test("POST /checkout (empty cart) - Status is 400", function() {
+        client.assert(response.status === 400, "Expected 400 for empty cart");
+    });
+
+    client.test("POST /checkout (empty cart) - Success is false", function() {
+        client.assert(response.body.success === false, "Expected success to be false");
+    });
+
+    client.test("POST /checkout (empty cart) - Error message", function() {
+        client.assert(response.body.data.message === "cart is empty", "Expected 'cart is empty' message");
+    });
+%}
+
+###
+
+### 6. Checkout with invalid quantity (0)
+POST {{host}}/api/checkout
+Content-Type: application/json
+
+{
+    "items": [
+        {"product_id": "{{checkoutProductA}}", "quantity": 0}
+    ]
+}
+
+> {%
+    client.test("POST /checkout (quantity 0) - Status is 400", function() {
+        client.assert(response.status === 400, "Expected 400 for invalid quantity");
+    });
+
+    client.test("POST /checkout (quantity 0) - Error message", function() {
+        client.assert(response.body.data.message === "quantity must be greater than 0", "Expected quantity error");
+    });
+%}
+
+###
+
+### 7. Checkout with negative quantity
+POST {{host}}/api/checkout
+Content-Type: application/json
+
+{
+    "items": [
+        {"product_id": "{{checkoutProductA}}", "quantity": -5}
+    ]
+}
+
+> {%
+    client.test("POST /checkout (negative quantity) - Status is 400", function() {
+        client.assert(response.status === 400, "Expected 400 for negative quantity");
+    });
+%}
+
+###
+
+### 8. Checkout with non-existent product (404)
+POST {{host}}/api/checkout
+Content-Type: application/json
+
+{
+    "items": [
+        {"product_id": "01NONEXISTENT00000000000", "quantity": 1}
+    ]
+}
+
+> {%
+    client.test("POST /checkout (non-existent product) - Status is 404", function() {
+        client.assert(response.status === 404, "Expected 404 for non-existent product");
+    });
+
+    client.test("POST /checkout (non-existent product) - Success is false", function() {
+        client.assert(response.body.success === false, "Expected success to be false");
+    });
+%}
+
+###
+
+### 9. Checkout with insufficient stock (400)
+POST {{host}}/api/checkout
+Content-Type: application/json
+
+{
+    "items": [
+        {"product_id": "{{checkoutProductA}}", "quantity": 9999}
+    ]
+}
+
+> {%
+    client.test("POST /checkout (insufficient stock) - Status is 400", function() {
+        client.assert(response.status === 400, "Expected 400 for insufficient stock");
+    });
+
+    client.test("POST /checkout (insufficient stock) - Error message", function() {
+        client.assert(response.body.data.message === "insufficient stock", "Expected 'insufficient stock' message");
+    });
+%}
+
+###
+
+### 10. Verify stock unchanged after failed checkout
+GET {{host}}/api/products/{{checkoutProductA}}
+Content-Type: application/json
+
+> {%
+    client.test("GET /products - Stock unchanged after failed checkout", function() {
+        client.assert(response.body.data.stock === 45, "Expected stock still 45");
+    });
+%}
+
+###
+
+### ============================================
+### CHECKOUT TEST COMPLETE
+### ============================================
+### Covers:
+### - Single item checkout
+### - Multiple items checkout
+### - Stock decrement verification
+### - Empty cart error (400)
+### - Invalid quantity error (400)
+### - Non-existent product error (404)
+### - Insufficient stock error (400)
+### - Rollback verification (stock unchanged on failure)
+### ============================================

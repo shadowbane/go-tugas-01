@@ -22,7 +22,7 @@ func (r *ProductRepository) GetAll(name string) ([]models.Product, error) {
 
 	var args []interface{}
 	if name != "" {
-		query += " WHERE name ILIKE $1"
+		query += " WHERE name ILIKE $1 OR description ILIKE $1"
 		args = append(args, "%"+name+"%")
 	}
 

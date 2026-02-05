@@ -1,5 +1,5 @@
 ### Create category
-POST {{host}}/categories
+POST {{host}}/api/categories
 Content-Type: application/json
 
 {

@@ -1,5 +1,5 @@
 ### Delete a category
-DELETE {{host}}/categories/{{categoryId}}
+DELETE {{host}}/api/categories/{{categoryId}}
 Content-Type: application/json
 
 > {%
