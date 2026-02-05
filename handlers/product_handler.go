@@ -34,7 +34,9 @@ func (h *ProductHandler) Index() httprouter.Handle {
 			}
 		}(r.Body)
 
-		data, err := h.service.GetAll()
+		name := r.URL.Query().Get("name")
+
+		data, err := h.service.GetAll(name)
 		if err != nil {
 			helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
 			return
