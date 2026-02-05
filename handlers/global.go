@@ -4,4 +4,5 @@ type Handler struct {
 	CategoryHandler    *CategoryHandler
 	ProductHandler     *ProductHandler
 	TransactionHandler *TransactionHandler
+	ReportHandler      *ReportHandler
 }

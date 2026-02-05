@@ -34,5 +34,10 @@ func Api(handlers *handlers.Handler) *httprouter.Router {
 	// **POST** `/api/checkout` → Checkout / create transaction
 	mux.POST("/api/checkout", handlers.TransactionHandler.Checkout())
 
+	// **GET** `/api/report/hari-ini` → Get today's transaction report
+	mux.GET("/api/report/hari-ini", handlers.ReportHandler.TodayReport())
+	// **GET** `/api/report` → Get transaction report by date range
+	mux.GET("/api/report", handlers.ReportHandler.DateRangeReport())
+
 	return mux
 }

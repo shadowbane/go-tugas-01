@@ -42,6 +42,7 @@ func main() {
 		CategoryHandler:    handlers.NewCategoryHandler(categoryService),
 		ProductHandler:     handlers.NewProductHandler(productService),
 		TransactionHandler: handlers.NewTransactionHandler(transactionService),
+		ReportHandler:      handlers.NewReportHandler(transactionService),
 	}
 
 	srv := server.
